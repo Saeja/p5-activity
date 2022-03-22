@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Starbucks Locations</title>
+
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
+  <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 100%;
+    }
+
+    #instructions {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background-color: #fff;
+      padding: 5px 20px 5px 20px;
+      border: 2px solid black;
+      border-radius: 4px;
+      width: 150px;
+    }
+
+    .read-only {
+      width: 50px;
+      border: none;
+      font-weight: bold;
+    }
+
+    .read-only:focus-visible {
+      outline: none;
+    }
+
+  </style>
+
+</head>
+
+<body>
+  <div id="map"></div>
+  <div id="instructions">
+    <h2>☕ ☕ ☕</h2>
+    <p>Click for nearby Starbucks.</p>
+    <input id="toggle-button" type="button" value="Toggle Starbucks Icons">
+    
+    <p>Select the radius</p>
+
+    <input id="radius" type="range" min="500" max="5000" value="2000">
+    <p>Selected Radius
+      <input readonly type="number" class="read-only" id="radius-in-meters" value="2000"></input>m
+    </p>
+    <p># of Starbucks in Radius
+      <input readonly type="number" class="read-only" id="number-of-starbucks" value="0"></input>
+    </p>
+  </div>
+  <script>
+
+    var starbucks = {
+      "type": "FeatureCollection", "features": [{ "type": "Feature", "properties": { "ID": 1, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.12, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 2, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.13, 49.29] } },
+      { "type": "Feature", "properties": { "ID": 3, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.15, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 4, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.12, 49.28] } },
+      { "type": "Feature", "properties": { "ID": 6, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.13, 49.25] } },
+      { "type": "Feature", "properties": { "ID": 7, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.25, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 8, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.12, 49.29] } },
+      { "type": "Feature", "properties": { "ID": 9, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.17, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 11, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.14, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 12, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.05, 49.28] } },
+      { "type": "Feature", "properties": { "ID": 13, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.14, 49.29] } },
+      { "type": "Feature", "properties": { "ID": 14, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.24, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 16, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.1, 49.37] } },
+      { "type": "Feature", "properties": { "ID": 18, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.25, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 20, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.09, 49.23] } },
+      { "type": "Feature", "properties": { "ID": 23, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.05, 49.23] } },
+      { "type": "Feature", "properties": { "ID": 24, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.12, 49.23] } },
+      { "type": "Feature", "properties": { "ID": 25, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.12, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 28, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.1, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 29, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.11, 49.29] } },
+      { "type": "Feature", "properties": { "ID": 30, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.14, 49.21] } },
+      { "type": "Feature", "properties": { "ID": 31, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.11, 49.21] } },
+      { "type": "Feature", "properties": { "ID": 33, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.1, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 35, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.12, 49.24] } },
+      { "type": "Feature", "properties": { "ID": 36, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.04, 49.22] } },
+      { "type": "Feature", "properties": { "ID": 38, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.11, 49.28] } },
+      { "type": "Feature", "properties": { "ID": 39, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.11, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 41, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.11, 49.22] } },
+      { "type": "Feature", "properties": { "ID": 43, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.21, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 44, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.11, 49.25] } },
+      { "type": "Feature", "properties": { "ID": 50, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.15, 49.24] } },
+      { "type": "Feature", "properties": { "ID": 52, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.01, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 53, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.16, 49.23] } },
+      { "type": "Feature", "properties": { "ID": 54, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.11, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 56, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.12, 49.21] } },
+      { "type": "Feature", "properties": { "ID": 58, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.16, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 59, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.07, 49.28] } },
+      { "type": "Feature", "properties": { "ID": 61, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.1, 49.28] } },
+      { "type": "Feature", "properties": { "ID": 67, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.09, 49.28] } },
+      { "type": "Feature", "properties": { "ID": 69, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.09, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 73, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.13, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 74, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.02, 49.23] } },
+      { "type": "Feature", "properties": { "ID": 75, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.03, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 78, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.14, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 85, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.19, 49.25] } },
+      { "type": "Feature", "properties": { "ID": 86, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.13, 49.21] } },
+      { "type": "Feature", "properties": { "ID": 87, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.07, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 90, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.07, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 93, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.09, 49.24] } },
+      { "type": "Feature", "properties": { "ID": 99, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.04, 49.26] } },
+      { "type": "Feature", "properties": { "ID": 100, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.17, 49.27] } },
+      { "type": "Feature", "properties": { "ID": 102, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.03, 49.23] } },
+      { "type": "Feature", "properties": { "ID": 106, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.12, 49.25] } },
+      { "type": "Feature", "properties": { "ID": 107, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.07, 49.23] } },
+      { "type": "Feature", "properties": { "ID": 108, "isStarbucks": "yes" }, "geometry": { "type": "Point", "coordinates": [-123.13, 49.28] } },
+      ]
+    };
+
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic2FlamEyMyIsImEiOiJjbDA3aDY5eWkyOGZkM2tucHo2NWlmOGZwIn0.U7UK4cHRn-c1ftZta39JMw';
+    const map = new mapboxgl.Map({
+      container: 'map', // container ID
+      style: 'mapbox://styles/saeja23/cl10a89kx00au15nwret34n5u', // custom style url from https://studio.mapbox.com/
+      center: [236.87, 49.25], // starting position
+      zoom: 12 // starting zoom
+    });
+
+    map.on('load', function () {
+      
+    map.setPaintProperty("Starbucks Locations Final", "icon-opacity", 0)
+    map.setPaintProperty("Starbucks Locations Final", "text-opacity", 0)
+      map.addLayer({
+        id: 'starbuckslocations',
+        source: {
+          type: 'geojson',
+          data: starbucks
+        },
+        type: 'circle',
+        paint: {
+          'circle-color': '#5555f6',
+          'circle-radius': 18.5,
+          'circle-opacity': 0
+        }
+      })
+      map.addLayer({
+        id: 'starbucksnear',
+        source: {
+          type: 'geojson',
+          data: { "type": "FeatureCollection", "features": [] }
+        },
+        type: 'circle',
+        paint: {
+          'circle-color': '#ff1a1a',
+          'circle-radius': 18.5,
+          'circle-opacity': 0.5,
+          'circle-stroke-color': "#ff6060",
+          'circle-stroke-width': 1
+        }
+      });
+      map.addLayer({
+        id: 'search-radius',
+        source: {
+          type: 'geojson',
+          data: { "type": "FeatureCollection", "features": [] }
+        },
+        type: 'fill',
+        paint: {
+          'fill-color': '#884316',
+          'fill-opacity': 0.4
+        }
+      });
+    });
+    
+    map.on('click', function (e) {
+      let selectedRadius = document.querySelector("#radius").value;
+      var eventLngLat = [e.lngLat.lng, e.lngLat.lat];
+      var searchRadius = makeRadius(eventLngLat, selectedRadius);
+      map.getSource('search-radius').setData(searchRadius);
+      var featuresInBuffer = spatialJoin(starbucks, searchRadius);
+      document.querySelector('#number-of-starbucks').value = featuresInBuffer.length;
+      map.getSource('starbucksnear')?.setData(turf.featureCollection(featuresInBuffer));
+    });
+
+
+    document.querySelector("#radius").addEventListener('change', (e) => {
+      document.querySelector("#radius-in-meters").value = e.target.value;
+    })
+
+    document.querySelector("#toggle-button").addEventListener("click", (e) => {
+      let currentOpacity = map.getPaintProperty("Starbucks Locations Final", "icon-opacity")
+      if (currentOpacity) {
+        currentOpacity = 0
+      } else {
+        currentOpacity = 1
+      }
+      map.setPaintProperty("Starbucks Locations Final", "icon-opacity", currentOpacity)
+      map.setPaintProperty("Starbucks Locations Final", "text-opacity", currentOpacity)
+    })
+    function makeRadius(lngLatArray, radiusInMeters) {
+      var point = turf.point(lngLatArray);
+      var buffered = turf.buffer(point, radiusInMeters, { units: 'meters' });
+      return buffered;
+    };
+
+    function spatialJoin(sourceGeoJSON, filterFeature) {
+      var joined = sourceGeoJSON.features.filter(function (feature) {
+        return turf.booleanPointInPolygon(feature, filterFeature) && feature.properties.isStarbucks === 'yes';
+      });
+
+      return joined;
+    };
+
+
+  </script>
+</body>
+
+</html>
