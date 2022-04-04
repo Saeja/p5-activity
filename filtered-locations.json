@@ -1,0 +1,86 @@
+[
+  {
+    "id": 14496,
+    "name": "English River 19000100702 (19000100702)",
+    "longitude": -93.455272,
+    "latitude": 50.583379,
+    "color": "#FF1493"
+  },
+  {
+    "id": 195445,
+    "name": "ENGLISH RIVER STATION (19000100702)",
+    "longitude": -93.455272,
+    "latitude": 50.583379,
+    "color": "#FF1493"
+  },
+  {
+    "id": 14963,
+    "name": "Wabigoon River 19000100502 (19000100502)",
+    "longitude": -92.842739,
+    "latitude": 49.781916,
+    "color": "#DC143C"
+  },
+  {
+    "id": 13295,
+    "name": "Wabigoon River 19000100602 (19000100602)",
+    "longitude": -92.852942,
+    "latitude": 49.790534,
+    "color": "#FFA500"
+  },
+  {
+    "id": 15123,
+    "name": "Wabigoon River 19000103502 (19000103502)",
+    "longitude": -93.090365,
+    "latitude": 49.851005,
+    "color": "#0000FF"
+  },
+  {
+    "id": 14366,
+    "name": "Wabigoon River 19000103602 (19000103602)",
+    "longitude": -93.401243,
+    "latitude": 49.958612,
+    "color": "#800080"
+  },
+  {
+    "id": 15032,
+    "name": "Wabigoon River 19000103802 (19000103802)",
+    "longitude": -92.873984,
+    "latitude": 49.81512,
+    "color": "#008000"
+  },
+  {
+    "id": 195823,
+    "name": "WABIGOON RIVER STATION (19000100502)",
+    "longitude": -92.842739,
+    "latitude": 49.781916,
+    "color": "#DC143C"
+  },
+  {
+    "id": 196837,
+    "name": "WABIGOON RIVER STATION (19000100602)",
+    "longitude": -92.852942,
+    "latitude": 49.790534,
+    "color": "#FFA500"
+  },
+  {
+    "id": 196800,
+    "name": "WABIGOON RIVER STATION (19000103502)",
+    "longitude": -93.090365,
+    "latitude": 49.851005,
+    "color": "#0000FF"
+  },
+  {
+    "id": 195573,
+    "name": "WABIGOON RIVER STATION (19000103602)",
+    "longitude": -93.401243,
+    "latitude": 49.958612,
+    "color": "#800080"
+  },
+  {
+    "id": 196848,
+    "name": "WABIGOON RIVER STATION (19000103802)",
+    "longitude": -92.873984,
+    "latitude": 49.81512,
+    "color": "#008000"
+  }
+]

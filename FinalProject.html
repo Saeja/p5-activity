@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <title>Mercury Levels by Location</title>
+
+  <link href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css" rel="stylesheet">
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
+  <script src='https://cdn.plot.ly/plotly-2.9.0.min.js'></script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    #map {
+      display: flex;
+      height: 500px;
+      width: 100%;
+    }
+
+    #plot {
+      width: 95%;
+
+      margin-left: auto;
+      margin-right: auto;
+      margin: 16px;
+
+      border-radius: 8px;
+    }
+
+    #instructions {
+      position: absolute;
+      right: 0;
+      z-index: 10;
+      background: white;
+      padding: 3px 16px 3px 16px;
+      border: 1px solid black;
+      margin: 6px;
+    }
+
+    button {
+      display: inline-block;
+      margin-top: 16px;
+      font-weight: 400;
+      text-align: center;
+      cursor: pointer;
+      background-image: none;
+      border: 1px solid transparent;
+      padding: 6px 12px;
+      font-size: 14px;
+      line-height: 1.42857143;
+      border-radius: 4px;
+      user-select: none;
+    }
+
+    button:active {
+      background: #cacaca;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div id="instructions">
+    <p>Click each marker to select data to graph!</p>
+  </div>
+  <div id="map"></div>
+  <button id="plot-select-all">Select all Data</button>
+  <button id="plot-deselect-all">Deselect all Data</button>
+  <div id='plot' class="plot-body">
+  </div>
+
+  <script>
+
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic2FlamEyMyIsImEiOiJjbDA3aDY5eWkyOGZkM2tucHo2NWlmOGZwIn0.U7UK4cHRn-c1ftZta39JMw';
+    const map = new mapboxgl.Map({
+      container: 'map', // container ID
+      style: 'mapbox://styles/saeja23/cl1jxvgtv008h15lduxxx2bfm', // custom style url from https://studio.mapbox.com/
+      center: [-92.9501912, 50.0675193], // starting position
+      zoom: 7.5 // starting zoom
+    });
+
+
+    // buttons
+    document.querySelector('#plot-select-all').addEventListener('click', () => {
+      document.querySelectorAll('.traces rect').forEach(legendItem => {
+        if (legendItem.parentElement.style.opacity == "0.5") {
+          legendItem.dispatchEvent(new Event('mouseup'))
+        }
+      })
+    })
+
+    document.querySelector('#plot-deselect-all').addEventListener('click', () => {
+      document.querySelectorAll('.traces rect').forEach(legendItem => {
+        if (legendItem.parentElement.style.opacity == "1") {
+          legendItem.dispatchEvent(new Event('mouseup'))
+        }
+      })
+    })
+
+    // get measurements from json file
+    let getMeasurements = fetch('/filtered-measurements.json').then(measurementsResponse => {
+      return measurementsResponse.json();
+    });
+
+    // process locations + measurements
+    let processLocations = fetch('/filtered-locations.json').then(locationsResponse => {
+      return locationsResponse.json();
+    }).then(locations => {
+      let measurementsByLocation = []
+
+      locations.forEach(location => {
+
+        getMeasurements.then(measurements => {
+          let measurementEntry = {
+            location: location,
+            measurements: measurements.filter(m => m.location_id == location.id),
+            measurementPlot: {
+              x: [],
+              y: []
+            }
+          }
+
+          measurementEntry.measurementPlot.x = measurementEntry.measurements.map(measurement => {
+            // represents year and month by using year.month
+            return parseFloat(`${measurement.timestamp.substring(0, 4)}.${measurement.timestamp.substring(5, 7)}`)
+          })
+
+          measurementEntry.measurementPlot.y = measurementEntry.measurements.map(measurement => {
+            return measurement.measure
+          })
+
+          measurementsByLocation.push(measurementEntry)
+
+          let popup = new mapboxgl.Popup({ offset: [0, -30] })
+            .setLngLat([measurementEntry.location.longitude, measurementEntry.location.latitude])
+            .setHTML(
+              `<p style="font-weight: bold">${measurementEntry.location.name}</p>`,
+            );
+          let marker = new mapboxgl.Marker({
+            color: measurementEntry.location.color,
+            draggable: false
+          }).setLngLat([measurementEntry.location.longitude, measurementEntry.location.latitude])
+            .setPopup(popup)
+            .addTo(map);
+
+          marker.getElement().addEventListener('click', () => {
+
+            document.querySelector(`g text[data-unformatted="${measurementEntry.location.name}"`)
+              ?.parentElement
+              .querySelector('rect')
+              .dispatchEvent(new Event('mouseup'))
+
+          })
+        })
+      })
+      return measurementsByLocation;
+    })
+
+
+    let ccmeLine = {
+      x: [1975, 1995],
+      y: [0.026, 0.026],
+      mode: 'lines',
+      name: "0.026 CCME Chronic Guideline",
+      line: {
+        color: "#000",
+        dash: 'dash',
+        width: 2
+      }
+    }
+    let plots = []
+
+    processLocations.then((measurementsByLocation) => {
+
+      measurementsByLocation.forEach(entry => {
+        let plotData = {
+          x: entry.measurementPlot.x,
+          y: entry.measurementPlot.y,
+          mode: 'markers',
+          type: 'scatter',
+          name: entry.location.name,
+          marker: {
+            color: entry.location.color,
+            size: 6
+          },
+          visible: 'legendonly'
+        }
+        plots.push(plotData);
+
+      });
+      plots.push(ccmeLine);
+
+      Plotly.newPlot('plot', plots, {
+        title: "Mercury Levels by Year/Month/Total",
+        yaxis: {
+          title: "Mercury Total (μg/L)"
+        },
+        xaxis: {
+          title: "Date Range"
+        }
+      });
+    })
+  </script>
+</body>
+
+</html>
