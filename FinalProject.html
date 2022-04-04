@@ -85,7 +85,6 @@
     });
 
 
-    // buttons
     document.querySelector('#plot-select-all').addEventListener('click', () => {
       document.querySelectorAll('.traces rect').forEach(legendItem => {
         if (legendItem.parentElement.style.opacity == "0.5") {
@@ -102,13 +101,11 @@
       })
     })
 
-    // get measurements from json file
-    let getMeasurements = fetch('https://github.com/Saeja/saeja-web/filtered-measurements.json').then(measurementsResponse => {
+    let getMeasurements = fetch('https://github.com/Saeja/saeja-web/blob/gh-pages/filtered-measurements.json').then(measurementsResponse => {
       return measurementsResponse.json();
     });
 
-    // process locations + measurements
-    let processLocations = fetch('https://github.com/Saeja/saeja-web/filtered-locations.json').then(locationsResponse => {
+    let processLocations = fetch('https://github.com/Saeja/saeja-web/blob/gh-pages/filtered-locations.json').then(locationsResponse => {
       return locationsResponse.json();
     }).then(locations => {
       let measurementsByLocation = []
@@ -126,7 +123,7 @@
           }
 
           measurementEntry.measurementPlot.x = measurementEntry.measurements.map(measurement => {
-            // represents year and month by using year.month
+
             return parseFloat(`${measurement.timestamp.substring(0, 4)}.${measurement.timestamp.substring(5, 7)}`)
           })
 
