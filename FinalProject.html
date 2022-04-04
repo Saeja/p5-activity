@@ -101,11 +101,11 @@
       })
     })
 
-    let getMeasurements = fetch('https://github.com/Saeja/saeja-web/blob/gh-pages/filtered-measurements.json').then(measurementsResponse => {
+    let getMeasurements = fetch('https://raw.githubusercontent.com/Saeja/saeja-web/gh-pages/filtered-measurements.json').then(measurementsResponse => {
       return measurementsResponse.json();
     });
 
-    let processLocations = fetch('https://github.com/Saeja/saeja-web/blob/gh-pages/filtered-locations.json').then(locationsResponse => {
+    let processLocations = fetch('https://raw.githubusercontent.com/Saeja/saeja-web/gh-pages/filtered-locations.json').then(locationsResponse => {
       return locationsResponse.json();
     }).then(locations => {
       let measurementsByLocation = []
