@@ -103,12 +103,12 @@
     })
 
     // get measurements from json file
-    let getMeasurements = fetch('/filtered-measurements.json').then(measurementsResponse => {
+    let getMeasurements = fetch('https://github.com/Saeja/saeja-web/filtered-measurements.json').then(measurementsResponse => {
       return measurementsResponse.json();
     });
 
     // process locations + measurements
-    let processLocations = fetch('/filtered-locations.json').then(locationsResponse => {
+    let processLocations = fetch('https://github.com/Saeja/saeja-web/filtered-locations.json').then(locationsResponse => {
       return locationsResponse.json();
     }).then(locations => {
       let measurementsByLocation = []
